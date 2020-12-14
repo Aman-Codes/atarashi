@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-import argparse
+import plac
 import os
 import json
 from pkg_resources import resource_filename
@@ -84,37 +84,28 @@ def atarashii_runner(inputFile, processedLicense, agent_name, similarity="Cosine
   return result
 
 
-def main():
+@plac.annotations( 
+  inputFile = plac.Annotation("Specify the input file path to scan", "positional"),
+  processedLicense = plac.Annotation("Specify the location of processed license list file", "optional", "l", str, metavar="PROCESSEDLICENSELIST"),
+  agent_name = plac.Annotation("Name of the agent that needs to be run", "positional", "a", str, ["wordFrequencySimilarity", "DLD", "tfidf", "Ngram"]),
+  similarity = plac.Annotation("Specify the similarity algorithm that you want. First 2 are for TFIDF and last 3 are for Ngram", "positional", "s", str, ["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"]),
+  ngram_json = plac.Annotation("Specify the location of Ngram JSON (for Ngram agent only)", "positional", "j", metavar="NGRAM_JSON"),
+  verbose = plac.Annotation("Increase output verbosity", "flag", "v"),
+  version = plac.Annotation("Version", "positional", "V", None)
+)
+
+
+def main(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose=0, version):
   '''
   Calls atarashii_runner for each file in the folder/ repository specified by user
   Prints the Input file path and the JSON output from atarashii_runner
   '''
   defaultProcessed = resource_filename("atarashi", "data/licenses/processedLicenses.csv")
   defaultJSON = resource_filename("atarashi", "data/Ngram_keywords.json")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("inputFile", help="Specify the input file path to scan")
-  parser.add_argument("-l", "--processedLicenseList", required=False,
-                      help="Specify the location of processed license list file")
-  parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'],
-                      help="Name of the agent that needs to be run")
-  parser.add_argument("-s", "--similarity", required=False, default="CosineSim",
-                      choices=["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"],
-                      help="Specify the similarity algorithm that you want."
-                           " First 2 are for TFIDF and last 3 are for Ngram")
-  parser.add_argument("-j", "--ngram_json", required=False,
-                      help="Specify the location of Ngram JSON (for Ngram agent only)")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
-  args = parser.parse_args()
-  inputFile = args.inputFile
-  agent_name = args.agent_name
-  similarity = args.similarity
-  verbose = args.verbose
-  processedLicense = args.processedLicenseList
-  ngram_json = args.ngram_json
 
+  if(version):
+    print("atarashi ", __version__)
+    return 0
   if processedLicense is None:
     processedLicense = defaultProcessed
   if ngram_json is None:
@@ -142,4 +133,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  plac.call(main)

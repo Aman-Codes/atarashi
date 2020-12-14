@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 __author__ = "Aman Jain"
 __email__ = "amanjain5221@gmail.com"
 
-import argparse
+import plac
 from enum import Enum
 import itertools
 import time
@@ -151,24 +151,15 @@ class TFIDF(AtarashiAgent):
       self.algo = newAlgo
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-s", "--tfidf_similarity", required=False,
-                      default="ScoreSim",
-                      choices=["CosineSim", "ScoreSim"],
-                      help="Specify the similarity algorithm that you want")
-  parser.add_argument("inputFile", help="Specify the input file which needs to be scanned")
-  parser.add_argument("processedLicenseList",
-                      help="Specify the processed license list file which contains licenses")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
+@plac.annotations(
+  tfidf_similarity = plac.Annotation("Specify the similarity algorithm that you want", "positional", "s", str, ["CosineSim", "ScoreSim"])
+  filename = plac.Annotation("Specify the input file which needs to be scanned", "positional", metavar="inputFile"),
+  licenseList = plac.Annotation("Specify the processed license list file which contains licenses", "optional", str, metavar="PROCESSEDLICENSELIST"), 
+  verbose = plac.Annotation("Increase output verbosity", "flag", "v")
+)
 
-  tfidf_similarity = args.tfidf_similarity
-  filename = args.inputFile
-  licenseList = args.processedLicenseList
-  verbose = args.verbose
 
+def main(tfidf_similarity="ScoreSim", filename, licenseList, verbose=0):
   scanner = TFIDF(licenseList, verbose=verbose)
   if tfidf_similarity == "CosineSim":
     scanner.setSimAlgo(TFIDF.TfidfAlgo.cosineSim)
@@ -176,3 +167,7 @@ if __name__ == "__main__":
   else:
     scanner.setSimAlgo(TFIDF.TfidfAlgo.scoreSim)
     print("License Detected using TF-IDF algorithm + sum score " + str(scanner.scan(filename)))
+
+
+if __name__ == "__main__":
+  plac.call(main)

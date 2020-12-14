@@ -23,7 +23,7 @@ import json
 from tqdm import tqdm
 import shutil
 import sys
-import argparse
+import plac
 
 __author__ = "Ayush Bhardwaj"
 __email__ = "classicayush@gmail.com"
@@ -126,19 +126,13 @@ def evaluate(command):
   return (timeElapsed, accuracy)
 
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-a", "--agent_name", required=True,
-                      choices=['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram'], help="Name of the agent that you want to evaluate")
-  parser.add_argument("-s", "--similarity", required=False,
-                      default=" ", choices=["ScoreSim", "CosineSim", "DiceSim", " ", "BigramCosineSim"], help="Specify the similarity algorithm that you want to evaluate"
-                      " First 2 are for TFIDF and last 3 are for Ngram")
-  args = parser.parse_args()
-  agent_name = args.agent_name
-  similarity = args.similarity
-  
-  
+@plac.annotations( 
+  agent_name = plac.Annotation("Name of the agent that you want to evaluate", "positional", "a", str, ['wordFrequencySimilarity', 'DLD', 'tfidf', 'Ngram']),
+  similarity = plac.Annotation("Specify the similarity algorithm that you want to evaluate.  First 2 are for TFIDF and last 3 are for Ngram", "positional", "s", str, ["ScoreSim", "CosineSim", "DiceSim", " ", "BigramCosineSim"]),
+)
 
+
+def main(agent_name, similarity=" "):
   command = getCommand(agent_name, similarity)
   timeElapsed, accuracy = evaluate(command)
   print('\n' + '      ++++++++++++++++++ Result ++++++++++++++++++')
@@ -158,3 +152,5 @@ if __name__ == "__main__":
 
   shutil.rmtree('TestFiles')
 
+if __name__ == "__main__":
+  plac.call(main)

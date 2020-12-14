@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-import argparse
+import plac
 from nirjas import extract
 import json
 import os
@@ -139,20 +139,15 @@ class CommentPreprocessor(object):
     return outputFile
 
 
-if __name__ == "__main__":
-  print("The file has been run directly")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("-p", "--process", required=True,
-                      choices=['preprocess', 'extract'],
-                      help="Which process you want to run")
-  parser.add_argument("inputFile", help="Specify the input file which needs to be processed")
-  parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                      action="count", default=0)
-  args = parser.parse_args()
-  process = args.process
-  inputFile = args.inputFile
-  verbose = args.verbose
+@plac.annotations(
+  process = pl.Annotation("Which process you want to run", "positional", "p", str, ['preprocess', 'extract']),
+  inputFile = plac.Annotation("Specify the input file which needs to be scanned", "positional", metavar="inputFile"),
+  verbose = plac.Annotation("Increase output verbosity", "flag", "v")
+)
 
+
+def main(process, inputFile, verbose=0):
+  print("The file has been run directly")
   if process == "extract":
     tempLoc = str(CommentPreprocessor.extract(inputFile))
     print("Temporary output file path: ", tempLoc)
@@ -162,3 +157,7 @@ if __name__ == "__main__":
     with open(inputFile) as file:
       data = file.read().replace('\n', ' ')
       print("Preprocessed data is: ", str(CommentPreprocessor.preprocess(data)))
+
+
+if __name__ == "__main__":
+  plac.call(main)

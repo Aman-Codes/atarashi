@@ -81,7 +81,7 @@ def atarashii_runner(inputFile, agent_name, processedLicense, similarity="Cosine
       print("Please choose similarity from {CosineSim,DiceSim,BigramCosineSim}")
       return -1
 
-  scanner.setVerbose(verbose)
+  #scanner.setVerbose(verbose)
   result = scanner.scan(inputFile)
   return result
 
@@ -89,7 +89,7 @@ def atarashii_runner(inputFile, agent_name, processedLicense, similarity="Cosine
 @plac.annotations(
   version = ("show program's version number and exit", "flag", "V"),  
   agent_name = plac.Annotation("Name of the agent that needs to be run", "option", "a", str, ["wordFrequencySimilarity", "DLD", "tfidf", "Ngram"]),  
-  inputFile = plac.Annotation("Specify the input file path to scan"),
+  inputFile = plac.Annotation("Specify the input file path to scan", "option", "i", str, metavar="inputFile"),
   processedLicense = plac.Annotation("Specify the location of processed license list file", "option", "l", str, metavar="PROCESSEDLICENSELIST"),
   ngram_json = plac.Annotation("Specify the location of Ngram JSON (for Ngram agent only)", "option", "j"),
   similarity = plac.Annotation("Specify the similarity algorithm that you want. First 2 are for TFIDF and last 3 are for Ngram", "option", "s", str, ["ScoreSim", "CosineSim", "DiceSim", "BigramCosineSim"], metavar="{ScoreSim,CosineSim,DiceSim,BigramCosineSim}"),

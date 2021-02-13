@@ -126,26 +126,56 @@ def main():
     ngram_json = defaultJSON
 
   try:
-    result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
-    if result != -1:
-      if agent_name == "wordFrequencySimilarity":
-        result = [{
-                "shortname": str(result),
-                "sim_score": 1,
-                "sim_type": "wordFrequencySimilarity",
-                "description": ""
-            }]
-      elif agent_name == "DLD":
-        result = [{
-                "shortname": str(result),
-                "sim_score": 1,
-                "sim_type": "dld",
-                "description": ""
-            }]
-      result = list(result)
-      result = {"file": os.path.abspath(inputFile), "results": result}
-      result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
-      print(result + "\n")
+    if os.path.isfile(inputFile):
+      result = atarashii_runner(inputFile, processedLicense, agent_name, similarity, ngram_json, verbose)
+      if result != -1:
+        if agent_name == "wordFrequencySimilarity":
+          result = [{
+                  "shortname": str(result),
+                  "sim_score": 1,
+                  "sim_type": "wordFrequencySimilarity",
+                  "description": ""
+              }]
+        elif agent_name == "DLD":
+          result = [{
+                  "shortname": str(result),
+                  "sim_score": 1,
+                  "sim_type": "dld",
+                  "description": ""
+              }]
+        result = list(result)
+        result = {"file": os.path.abspath(inputFile), "results": result}
+        result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
+        print(result + "\n")
+    elif os.path.isdir(inputFile):
+      print("[", end="")
+      for root, dirs, files in os.walk(inputFile, followlinks=True):
+        for file in files:
+          file_to_scan = os.path.join(root, file)
+          if os.path.isfile(file_to_scan):
+            result = atarashii_runner(file_to_scan, processedLicense, agent_name, similarity, ngram_json, verbose)
+            if result != -1:
+              if agent_name == "wordFrequencySimilarity":
+                result = [{
+                        "shortname": str(result),
+                        "sim_score": 1,
+                        "sim_type": "wordFrequencySimilarity",
+                        "description": ""
+                    }]
+              elif agent_name == "DLD":
+                result = [{
+                        "shortname": str(result),
+                        "sim_score": 1,
+                        "sim_type": "dld",
+                        "description": ""
+                    }]
+              result = list(result)
+              result = {"file": os.path.abspath(file_to_scan), "results": result}
+              result = json.dumps(result, sort_keys=True, ensure_ascii=False, indent=4)
+              print(result + ",", end="")
+      print("\b]")
+    else:
+      raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), inputFile)
   except FileNotFoundError as e:
     print("Error: " + e.strerror+ ": '" + e.filename + "'")
 
